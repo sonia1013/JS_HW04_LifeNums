@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="./css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+    <script type="text/javascript" src="./js/jquery-1.8.3.min.js" charset="UTF-8"></script>
+</head>
+
+<body>
+    <div class="container">
+        <form action="" class="form-horizontal" role="form">
+            <fieldset>
+                <legend>LifeNum</legend>
+                <div class="form-group">
+                    <label for="dtp_input1" class="col-md-2 control-label">DateTime Picking</label>
+                    <div class="input-group date form_datetime col-md-7" data-date="1979-09-16T05:25:07Z"
+                        data-date-format="yyyy/mm/dd" data-link-field="dtp_input1">
+                        <input id="birthday" class="form-control" size="16" type="text" readonly>
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                    </div>
+                    <label class="control-label" id="confirmBirthday"
+                        style="margin-left: -15px;border-radius:0% 15% 15% 0%;background-color: blue;color: white; font-size: 135%;text-align: center;">分析結果</label>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <!-- <script src="./SpiritNumbers.js"></script> -->
+    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="./js/bootstrap-datetimepicker.zh-TW.js" charset="UTF-8"></script>
+    <script>
+        function getNum(params) {
+            if (parseInt(params) < 10)
+                return params;
+            else {
+                var sum = 0;
+                for (var i in params)
+                    sum += parseInt(params[i]);
+                params = sum.toString();
+                return getNum(params);
+            }
+        }
+        function getStarSigns(month, date) {
+            if (month == 1 && date >= 20 || month == 2 && date <= 18) return 'aquarius';
+            if (month == 2 && date >= 19 || month == 3 && date <= 20) return 'pisces';
+            if (month == 3 && date >= 21 || month == 4 && date <= 20) return 'aries';
+            if (month == 4 && date >= 21 || month == 5 && date <= 20) return 'taurus';
+            if (month == 5 && date >= 21 || month == 6 && date <= 21) return 'gemini';
+            if (month == 6 && date >= 22 || month == 7 && date <= 22) return 'cancer';
+            if (month == 7 && date <= 23 || month == 8 && date <= 22) return 'leo';
+            if (month == 8 && date >= 23 || month == 9 && date <= 22) return 'virgo';
+            if (month == 9 && date >= 23 || month == 10 && date <= 23) return 'libra';
+            if (month == 10 && date >= 24 || month == 11 && date <= 22) return 'scorpio';
+            if (month == 11 && date >= 23 || month == 12 && date <= 21) return 'sagittarius';
+            if (month == 12 && date >= 22 || month == 1 && date <= 20) return 'capricorn';
+        }
+        function getBirthday() {
+            var birthday = $("#birthday").val();
+            if (birthday) { //如果他為正面含意就過所以有的話就是過
+                //console.log(getNum(birthday));
+                $.get("http://buildschoolapi.azurewebsites.net/api/number/GetNumerology",
+                    {
+                        constellation: getStarSigns(parseInt(birthday.split("/")[1]), parseInt(birthday.split("/")[2])),
+                        number: getNum(birthday.replace(/\//g, ''))
+                    })
+                    .then(pkg => showResult(birthday, getStarSigns(parseInt(birthday.split("/")[1]), parseInt(birthday.split("/")[2])), getNum(birthday.replace(/\//g, '')), pkg))
+                    .catch(err => console.log(err));
+            }
+            else
+                alert("請填入生日!");
+        }
+        function showResult(date, signs, num, result) {
+            $("#window").remove();
+            $("form").append(`<div id="window"><h3>${date}<small>${signs}</small></h3><p>你的生命靈數是<strong>${num}</strong></p><pre>${result}</pre></div>`);
+        }
+        $(document).ready(function () {
+            $('.form_datetime').datetimepicker({
+                //language: 'zh-TW',
+                yearRange: "-20:+0",
+                weekStart: 1,
+                todayBtn: 0,
+                autoclose: 1,
+                todayHighlight: 0,
+                startView: 4,
+                MaxView: 4,
+                minView: 2,
+                forceParse: 1,
+                showMeridian: 0
+            });
+            $('#confirmBirthday').click(getBirthday);
+        })
+        //api example : http://buildschoolapi.azurewebsites.net/api/number/GetNumerology?constellation=cancer&number=5
+    </script>
+
+</body>
+
+</html>
